@@ -1,0 +1,17 @@
+#If a player is not listed here, they will be able to log in with no check at all. PLAYER NAMES MUST BE LOWER-CASE
+players:
+  #Restrict access for the user "Test" to ip 127.0.0.1
+  test:
+    ip: 127.0.0.1
+    #True if player should be opped once they are verified
+    op: true
+  #Disallow Notch from joining at all
+  notch:
+    ip: None
+    op: false
+settings:
+  #True if player should be banned if they fail IP authentication (or are not allowed
+  ban-on-wrong-ip: true
+  #Reason to kick a player if they fail IP authentication (or are not allowed)
+  kick-reason: Nope.
+    
