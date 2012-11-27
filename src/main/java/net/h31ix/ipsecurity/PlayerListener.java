@@ -1,5 +1,7 @@
 package net.h31ix.ipsecurity;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -20,33 +22,52 @@ public class PlayerListener implements Listener
     {
         Player player = event.getPlayer();
         String name = player.getName();
-        String pip = player.getAddress().getAddress().toString().replaceAll("/","");
-        if(player.isOp())
+        InetAddress address = null;
+        try
         {
-            player.setOp(false);
-        }
-        String ip = plugin.getIp(name);
-        if(ip != null)
-        {
-            if(!ip.equalsIgnoreCase("None"))
+        	address = InetAddress.getByName(player.getAddress().getAddress().toString());
+        	
+        	String pip = null;
+            
+            if(address.getHostAddress() == null)
             {
-                if(!pip.startsWith(ip))
+            	pip = player.getAddress().getAddress().toString().replaceAll("/","");
+            } else
+            {
+            	pip = address.getHostAddress().replaceAll("/", "");
+            }
+            
+            if(player.isOp())
+            {
+                player.setOp(false);
+            }
+            String ip = plugin.getIp(name);
+            if(ip != null)
+            {
+                if(!ip.equalsIgnoreCase("None"))
                 {
-                    error(player, ip, pip, 1);
+                    if(!pip.startsWith(ip))
+                    {
+                        error(player, ip, pip, 1);
+                    }
+                    else
+                    {
+                        if(plugin.isOp(name))
+                        {
+                            player.setOp(true);
+                        }
+                    }
                 }
                 else
                 {
-                    if(plugin.isOp(name))
-                    {
-                        player.setOp(true);
-                    }
+                    error(player, ip, pip, 2);
                 }
-            }
-            else
-            {
-                error(player, ip, pip, 2);
-            }
-        }  
+            }  
+        	
+        } catch (UnknownHostException e)
+        {
+        	
+        }
     }
     
     @EventHandler
@@ -63,7 +84,8 @@ public class PlayerListener implements Listener
     {
         if(plugin.ban())
         {
-            player.setBanned(true);
+            String ip = player.getAddress().getAddress().toString();
+            plugin.getServer().banIP(ip);
         }
         player.kickPlayer(plugin.getReason());
         System.out.println("********************************");
