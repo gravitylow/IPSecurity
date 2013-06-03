@@ -2,7 +2,8 @@
 players:
   #Restrict access for the user "Test" to ip 127.0.0.1
   test:
-    ip: 127.0.0.1
+    ips: 
+    - 127.0.0.1
     #True if player should be opped once they are verified
     op: true
   #Disallow Notch from joining at all
@@ -14,4 +15,5 @@ settings:
   ban-on-wrong-ip: true
   #Reason to kick a player if they fail IP authentication (or are not allowed)
   kick-reason: Nope.
-    
+  #Should alerts be enabled? Gets spammy with long ip lists.
+  alerts-enabled: false  

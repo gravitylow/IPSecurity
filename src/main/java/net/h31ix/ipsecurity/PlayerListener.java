@@ -2,6 +2,8 @@ package net.h31ix.ipsecurity;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.List;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -17,7 +19,7 @@ public class PlayerListener implements Listener
         this.plugin = plugin;
     }
     
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void onPlayerLogin(PlayerJoinEvent event)
     {
         Player player = event.getPlayer();
@@ -25,52 +27,62 @@ public class PlayerListener implements Listener
         InetAddress address = null;
         try
         {
-        	address = InetAddress.getByName(player.getAddress().getAddress().toString());
+        	address = InetAddress.getByName(player.getAddress().getAddress().toString().replace("/", ""));
         	
         	String pip = null;
             
-            if(address.getHostAddress() == null)
+            if(address.getHostName() == null)
             {
-            	pip = player.getAddress().getAddress().toString().replaceAll("/","");
+            	pip = player.getAddress().getAddress().toString().replace("/", "");
             } else
             {
-            	pip = address.getHostAddress().replaceAll("/", "");
+            	pip = address.getHostName().replace("/", "");
             }
             
             if(player.isOp())
             {
                 player.setOp(false);
             }
-            String ip = plugin.getIp(name);
-            if(ip != null)
+            List<String> ips = plugin.getIps(name);
+            
+            if(ips != null)
             {
-                if(!ip.equalsIgnoreCase("None"))
-                {
-                    if(!pip.startsWith(ip))
-                    {
-                        error(player, ip, pip, 1);
-                    }
-                    else
-                    {
-                        if(plugin.isOp(name))
-                        {
-                            player.setOp(true);
-                        }
-                    }
-                }
-                else
-                {
-                    error(player, ip, pip, 2);
-                }
+            	List<String> expectedIps = new ArrayList<String>();
+            	
+            	for(String ip: ips)
+            	{
+            		if(!ip.equalsIgnoreCase("none"))
+            		{
+            			if(!pip.startsWith(ip)) {expectedIps.add(ip); continue;}
+            			
+            			if(plugin.isOp(name))
+            			{
+            				player.setOp(true);
+            			}
+            			
+            			return;
+            		}
+            		else
+            		{
+            			error(player, ip, pip, 2);
+            			return;
+            		}
+            	}
+            	
+            	for(String s: expectedIps)
+            	{
+            		error(player, s, pip, 1);
+            		continue;
+            	}
             }  
-        	
         } catch (UnknownHostException e)
         {
-        	
+        	//debug
+        	plugin.getLogger().info("Unknown host exception caught for player: "+event.getPlayer().getName());
         }
     }
     
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void onPlayerQuit(PlayerQuitEvent event)
     {
         Player player = event.getPlayer();
@@ -88,16 +100,20 @@ public class PlayerListener implements Listener
             plugin.getServer().banIP(ip);
         }
         player.kickPlayer(plugin.getReason());
-        System.out.println("********************************");
-        if(type == 1)
+        
+        if(plugin.getConfig().getBoolean("settings.alerts-enabled"))
         {
-            System.out.println("ALERT: "+player.getName()+" logged in with ip: "+given);
-            System.out.println("But ip: "+expected+" was expected.");
+        	plugin.getLogger().info("********************************");
+        	if(type == 1)
+        	{
+        		plugin.getLogger().info("ALERT: "+player.getName()+" logged in with ip: "+given);
+        		plugin.getLogger().info("But ip: "+expected+" was expected.");
+        	}
+        	else if (type == 2)
+        	{
+        		plugin.getLogger().info("ALERT: "+player.getName()+" tried to log in, but is not allowed.");
+        	}
+        	plugin.getLogger().info("********************************");
         }
-        else if (type == 2)
-        {
-            System.out.println("ALERT: "+player.getName()+" tried to log in, but is not allowed.");
-        }
-        System.out.println("********************************");
     }
 }
