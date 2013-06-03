@@ -2,6 +2,7 @@ package net.h31ix.ipsecurity;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -28,9 +29,9 @@ public class IPSecurity extends JavaPlugin
         getCommand("ips").setExecutor(new CommandHandler(this));
     }
     
-    public String getIp(String player)
+    public List<String> getIps(String player)
     {      
-        return config.getString("players."+player.toLowerCase()+".ip");
+        return config.getStringList("players."+player.toLowerCase()+".ips");
     }
     
     public boolean isOp(String player)
@@ -48,15 +49,28 @@ public class IPSecurity extends JavaPlugin
         return kickReason;
     }
     
-    public void remove(String player)
+    public void remove(String player, String ip)
     {
-        config.set("players."+player.toLowerCase(), null);
+    	if(ip.equalsIgnoreCase("all"))
+    	{
+            config.set("players."+player.toLowerCase()+".ips", null);
+            saveConfiguration();
+            return;
+    	}
+    	
+        List<String> iplist = config.getStringList("players."+player.toLowerCase()+".ips");
+        iplist.remove(ip);
+        
+        config.set("players."+player.toLowerCase()+".ips", iplist);
         saveConfiguration();
     }
     
     public void add(String player, String ip, boolean op)
     {
-        config.set("players."+player.toLowerCase()+".ip", ip);
+        List<String> iplist = config.getStringList("players."+player.toLowerCase()+".ips");
+        iplist.add(ip);
+    	
+    	config.set("players."+player.toLowerCase()+".ips", iplist);
         config.set("players."+player.toLowerCase()+".op", op);
         saveConfiguration();
     }

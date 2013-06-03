@@ -14,7 +14,6 @@ public class CommandHandler implements CommandExecutor
         this.plugin = plugin;
     }
     
-    @Override
     public boolean onCommand(CommandSender cs, Command cmd, String alias, String[] args)
     {
         if(cmd.getName().equalsIgnoreCase("ips"))
@@ -24,6 +23,7 @@ public class CommandHandler implements CommandExecutor
                 if(args.length == 0)
                 {
                     sendHelp(cs);
+                    return true;
                 }
                 else
                 {
@@ -32,31 +32,65 @@ public class CommandHandler implements CommandExecutor
                         if(args[0].equalsIgnoreCase("help"))
                         {
                             sendHelp(cs);
+                            return true;
                         }
                         if(args[0].equalsIgnoreCase("reload"))
                         {
                             plugin.loadConfiguration();
                             cs.sendMessage(ChatColor.BLUE+"Configuration reloaded.");
+                            return true;
                         }                        
                     }
                     else if(args.length == 2)
                     {
                         if(args[0].equalsIgnoreCase("remove"))
-                        {
-                            if(plugin.getIp(args[1]) != null)
+                        { 
+                        	 if(plugin.getIps(args[1]) != null)
+                             {
+                             	if(plugin.getIps(args[1]).size() == 0)
+                             	{
+                                     cs.sendMessage(ChatColor.RED+"IPs for "+ChatColor.RED+"'Player: "+ChatColor.WHITE+args[1]+ChatColor.RED+"' not found in the configuration.");
+                                     return true;
+                             	}
+                             }
+                        }
+                    }
+                    else if(args.length == 3)
+                    {
+                        if(args[0].equalsIgnoreCase("remove"))
+                        {  	
+                            if(plugin.getIps(args[1]) != null)
                             {
-                                plugin.remove(args[1]);
+                            	if(plugin.getIps(args[1]).size() == 0)
+                            	{
+                                    cs.sendMessage(ChatColor.RED+"IPs for "+ChatColor.RED+"'Player: "+ChatColor.WHITE+args[1]+ChatColor.RED+"' not found in the configuration.");
+                                    return true;
+                            	}
+                            	
+                            	if(args[2].equalsIgnoreCase("all"))
+                            	{
+                                    plugin.remove(args[1], args[2]);
+                                    plugin.loadConfiguration();
+                                    cs.sendMessage(ChatColor.BLUE +"IP: "+args[2]+" removed from "+ChatColor.BLUE+"'Player: "+ChatColor.WHITE+args[1]+ChatColor.BLUE+"' in the configuration.");
+                                    return true;
+                            	}
+                            	
+                            	if(!plugin.getIps(args[1]).contains(args[2])) 
+                            	{
+                                    cs.sendMessage(ChatColor.RED+"IP: "+args[2]+" for "+ChatColor.RED+"'Player: "+ChatColor.WHITE+args[1]+ChatColor.RED+"' not found in the configuration.");
+                                    return true;
+                            	}
+                            	
+                                plugin.remove(args[1], args[2]);
                                 plugin.loadConfiguration();
-                                cs.sendMessage(ChatColor.BLUE+"Player: '"+ChatColor.WHITE+args[1]+ChatColor.BLUE+"' removed from the configuration.");
+                                cs.sendMessage(ChatColor.BLUE +"IP: "+args[2]+" from "+ChatColor.BLUE+"'Player: "+ChatColor.WHITE+args[1]+ChatColor.BLUE+"' in the configuration.");
+                                return true;
                             }
                             else
                             {
-                                cs.sendMessage(ChatColor.RED+"Player: '"+ChatColor.WHITE+args[1]+ChatColor.RED+"' not found in the configuration.");
+                                cs.sendMessage(ChatColor.RED+"IPs for "+ChatColor.RED+"'Player: "+ChatColor.WHITE+args[1]+ChatColor.RED+"' not found in the configuration.");
+                                return true;
                             }
-                        }
-                        else
-                        {
-                            sendHelp(cs);
                         }
                     }
                     else if(args.length == 4)
@@ -65,29 +99,34 @@ public class CommandHandler implements CommandExecutor
                         {
                             if(isBoolean(args[3]))
                             {
-                                plugin.add(args[1],args[2],Boolean.parseBoolean(args[3]));
+                                plugin.add(args[1], args[2], Boolean.parseBoolean(args[3]));
                                 plugin.loadConfiguration();
-                                cs.sendMessage(ChatColor.BLUE+"Player: '"+ChatColor.WHITE+args[1]+ChatColor.BLUE+"' added to the configuration");
+                                cs.sendMessage(ChatColor.BLUE+"IP: "+args[2]+ "added to "+ChatColor.BLUE+"'Player: "+ChatColor.WHITE+args[1]+ChatColor.BLUE+"' in the configuration");
+                                return true;
                             }
                             else
                             {
                                 cs.sendMessage(ChatColor.RED+"True/False value expected for op setting, String given.");
+                                return true;
                             }
                         }
                         else
                         {
                             sendHelp(cs);
+                            return true;
                         }
                     }  
                     else
                     {
                         sendHelp(cs);
+                        return true;
                     }
                 }
             }
             else
             {
                 cs.sendMessage(ChatColor.RED+"Sorry, but you do not have permission to execute that command.");
+                return true;
             }
         }
         return true;
@@ -111,7 +150,7 @@ public class CommandHandler implements CommandExecutor
         cs.sendMessage(ChatColor.GOLD+"Usage:");
         cs.sendMessage(ChatColor.GOLD+"/ips reload "+ChatColor.WHITE+"| Reload the config.");
         cs.sendMessage(ChatColor.GOLD+"/ips add [user] [ip/none] [op(true/false)] "+ChatColor.WHITE+"| Add a user to the config.");
-        cs.sendMessage(ChatColor.GOLD+"/ips remove [user] "+ChatColor.WHITE+"| Remove a user from the config.");
+        cs.sendMessage(ChatColor.GOLD+"/ips remove [user] [ip/all] "+ChatColor.WHITE+"| Remove a ip from a user in the config.");
         cs.sendMessage(ChatColor.GOLD+"/ips help "+ChatColor.WHITE+"| Access this page.");        
     }
 }
