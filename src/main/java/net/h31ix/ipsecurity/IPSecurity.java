@@ -105,18 +105,23 @@ public class IPSecurity extends JavaPlugin
         kickReason = config.getString("settings.kick-reason");  
         
         // Check for alerts-enabled existance
-        if(config.getString("settings.alerts-enabled") == null) {
+        if(config.getString("settings.alerts-enabled") == null) 
+        {
             config.set("settings.alerts-enabled", false);
             alert = false;
-        } else {
+        } 
+        else 
+        {
             alert = config.getBoolean("settings.alerts-enabled");
         }
         
         // Check for 1.1 ip storage
         java.util.Set<String> keys = config.getConfigurationSection("players").getKeys(false);
-        for(String string : keys) {
+        for(String string : keys) 
+        {
             String ip = config.getString("players."+string+".ip");
-            if(ip != null) {
+            if(ip != null) 
+            {
                 List<String> ipList = new ArrayList<String>();
                 ipList.add(ip);
                 config.set("players."+string+".ips", ipList);
