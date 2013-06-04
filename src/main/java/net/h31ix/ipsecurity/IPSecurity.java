@@ -2,17 +2,19 @@ package net.h31ix.ipsecurity;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class IPSecurity extends JavaPlugin
 {
-    private FileConfiguration config;
+    private YamlConfiguration config;
     private File configFile;
     private boolean ban;
+    private boolean alert;
     private String kickReason;
     
     @Override
@@ -28,10 +30,10 @@ public class IPSecurity extends JavaPlugin
         getCommand("ips").setExecutor(new CommandHandler(this));
     }
     
-    public String getIp(String player)
+    public List<String> getIps(String player)
     {      
-        return config.getString("players."+player.toLowerCase()+".ip");
-    }
+        return config.getStringList("players."+player.toLowerCase()+".ips");
+    } 
     
     public boolean isOp(String player)
     {
@@ -43,20 +45,38 @@ public class IPSecurity extends JavaPlugin
         return ban;
     }
     
+    public boolean alert()
+    {
+        return alert;
+    }
+    
     public String getReason()
     {
         return kickReason;
     }
     
-    public void remove(String player)
+    public void remove(String player, String ip)
     {
-        config.set("players."+player.toLowerCase(), null);
+    	if(ip.equalsIgnoreCase("all"))
+    	{
+            config.set("players."+player.toLowerCase()+".ips", null);
+            saveConfiguration();
+            return;
+    	}
+    	
+        List<String> iplist = config.getStringList("players."+player.toLowerCase()+".ips");
+        iplist.remove(ip);
+        
+        config.set("players."+player.toLowerCase()+".ips", iplist);
         saveConfiguration();
     }
     
     public void add(String player, String ip, boolean op)
     {
-        config.set("players."+player.toLowerCase()+".ip", ip);
+        List<String> iplist = config.getStringList("players."+player.toLowerCase()+".ips");
+        iplist.add(ip);
+    	
+    	config.set("players."+player.toLowerCase()+".ips", iplist);
         config.set("players."+player.toLowerCase()+".op", op);
         saveConfiguration();
     }
@@ -82,7 +102,29 @@ public class IPSecurity extends JavaPlugin
         }
         config = YamlConfiguration.loadConfiguration(configFile);
         ban = config.getBoolean("settings.ban-on-wrong-ip");
-        kickReason = config.getString("settings.kick-reason");        
+        kickReason = config.getString("settings.kick-reason");  
+        
+        // Check for alerts-enabled existance
+        if(config.getString("settings.alerts-enabled") == null) {
+            config.set("settings.alerts-enabled", false);
+            alert = false;
+        } else {
+            alert = config.getBoolean("settings.alerts-enabled");
+        }
+        
+        // Check for 1.1 ip storage
+        java.util.Set<String> keys = config.getConfigurationSection("players").getKeys(false);
+        for(String string : keys) {
+            String ip = config.getString("players."+string+".ip");
+            if(ip != null) {
+                List<String> ipList = new ArrayList<String>();
+                ipList.add(ip);
+                config.set("players."+string+".ips", ipList);
+                config.set("players."+string+".ip", null);
+            }
+        }
+       
+        saveConfiguration();
     }
 }
 

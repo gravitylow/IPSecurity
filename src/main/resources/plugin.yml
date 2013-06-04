@@ -1,12 +1,11 @@
 author: H31IX
 database: false
 description: IP Security for your server.
-generator: http://dinnerbone.com/minecraft/tools/pluginator/
 main: net.h31ix.ipsecurity.IPSecurity
 name: IPSecurity
 startup: postworld
-url: http://H31IX.NET/
-version: '1.1'
+url: http://gravitydevelopment.net
+version: '1.2'
 commands:
   ips:
     description: Configure IPSecurity
