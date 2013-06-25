@@ -54,10 +54,10 @@ public class PlayerListener implements Listener
             		if(!ip.equalsIgnoreCase("none"))
             		{
             			if(!pip.startsWith(ip)) 
-                                {
-                                    expectedIps.add(ip); 
-                                    continue;
-                                }
+                        {
+            				expectedIps.add(ip); 
+                            continue;
+                        }
             			
             			if(plugin.isOp(name))
             			{
@@ -73,10 +73,34 @@ public class PlayerListener implements Listener
             		}
             	}
             	
-            	for(String s: expectedIps)
+            	// set as the actual address in the case of hostnames
+            	pip = player.getAddress().getAddress().toString().replace("/", "");
+            	
+            	//second attempt using the true ip
+            	
+            	for(String ip: ips) 
             	{
-            		error(player, s, pip, 1);
-            		continue;
+            		if(!ip.equalsIgnoreCase("none")) 
+            		{
+            			if(!pip.startsWith(ip)) 
+            			{
+            				expectedIps.add(ip); 
+                            continue;
+                        }
+            			
+            			if(plugin.isOp(name)) 
+            			{
+            				player.setOp(true);
+            			}
+            			
+            			return;
+            		}
+            		
+            		else 
+            		{
+            			error(player, ip, pip, 2);
+            			return;
+            		}
             	}
             }  
         } catch (UnknownHostException e)
