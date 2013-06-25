@@ -17,48 +17,37 @@ public class IPSecurity extends JavaPlugin
     private boolean alert;
     private String kickReason;
     
-    @Override
-    public void onDisable() 
-    {
-    }
-
-    @Override
-    public void onEnable() 
-    {
+    public void onEnable() {
         loadConfiguration();
         getServer().getPluginManager().registerEvents(new PlayerListener(this), this);
         getCommand("ips").setExecutor(new CommandHandler(this));
     }
     
-    public List<String> getIps(String player)
-    {      
+    public void onDisable() {
+    }
+    
+    public List<String> getIps(String player) {      
         return config.getStringList("players."+player.toLowerCase()+".ips");
     } 
     
-    public boolean isOp(String player)
-    {
+    public boolean isOp(String player) {
         return config.getBoolean("players."+player.toLowerCase()+".op");
     }
     
-    public boolean ban()
-    {
+    public boolean ban() {
         return ban;
     }
     
-    public boolean alert()
-    {
+    public boolean alert(){
         return alert;
     }
     
-    public String getReason()
-    {
+    public String getReason(){
         return kickReason;
     }
     
-    public void remove(String player, String ip)
-    {
-    	if(ip.equalsIgnoreCase("all"))
-    	{
+    public void remove(String player, String ip) {
+    	if(ip.equalsIgnoreCase("all")) {
             config.set("players."+player.toLowerCase()+".ips", null);
             saveConfiguration();
             return;
@@ -71,8 +60,7 @@ public class IPSecurity extends JavaPlugin
         saveConfiguration();
     }
     
-    public void add(String player, String ip, boolean op)
-    {
+    public void add(String player, String ip, boolean op) {
         List<String> iplist = config.getStringList("players."+player.toLowerCase()+".ips");
         iplist.add(ip);
     	
@@ -81,23 +69,18 @@ public class IPSecurity extends JavaPlugin
         saveConfiguration();
     }
     
-    private void saveConfiguration()
-    {
-        try 
-        {
+    private void saveConfiguration() {
+        try {
             config.save(configFile);
         } 
-        catch (IOException ex) 
-        {
+        catch (IOException ex) {
             Logger.getLogger(IPSecurity.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
     
-    public void loadConfiguration()
-    {
+    public void loadConfiguration() {
         configFile = new File(this.getDataFolder()+"/config.yml");
-        if(!configFile.exists())
-        {
+        if(!configFile.exists()) {
             this.saveDefaultConfig();
         }
         config = YamlConfiguration.loadConfiguration(configFile);
@@ -105,23 +88,19 @@ public class IPSecurity extends JavaPlugin
         kickReason = config.getString("settings.kick-reason");  
         
         // Check for alerts-enabled existance
-        if(config.getString("settings.alerts-enabled") == null) 
-        {
+        if(config.getString("settings.alerts-enabled") == null) {
             config.set("settings.alerts-enabled", false);
             alert = false;
         } 
-        else 
-        {
+        else {
             alert = config.getBoolean("settings.alerts-enabled");
         }
         
         // Check for 1.1 ip storage
         java.util.Set<String> keys = config.getConfigurationSection("players").getKeys(false);
-        for(String string : keys) 
-        {
+        for(String string : keys) {
             String ip = config.getString("players."+string+".ip");
-            if(ip != null) 
-            {
+            if(ip != null) {
                 List<String> ipList = new ArrayList<String>();
                 ipList.add(ip);
                 config.set("players."+string+".ips", ipList);
